@@ -17,17 +17,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    config.cpp \
     keydetectthread.cpp \
     main.cpp \
-    mainwindow.cpp
+    matcher.cpp \
+    sound.cpp
 
 HEADERS += \
+    config.h \
+    desc.h \
     keydetectthread.h \
-    mainwindow.h \
-    napplication.h
-
-FORMS += \
-    mainwindow.ui
+    matcher.h \
+    sound.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

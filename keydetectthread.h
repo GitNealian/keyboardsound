@@ -1,8 +1,14 @@
 #ifndef KEYDETECTTHREAD_H
 #define KEYDETECTTHREAD_H
 
+#include "config.h"
+#include "matcher.h"
+
 #include <QSoundEffect>
 #include <QThread>
+#include <QMap>
+#include <sound.h>
+#include <QQueue>
 
 extern "C" {
 #include <sys/types.h>
@@ -16,17 +22,19 @@ extern "C" {
 #define KEY_RELEASE 0
 #define KEY_PRESS 1
 #define KEY_REPEAT 2
+
+
 class KeyDetectThread : public QThread
 {
 public:
-  KeyDetectThread();
+  KeyDetectThread(config*);
 private:
-   const std::string input_file_header = "/dev/input/event";
-  QSoundEffect *normalType;
-  QSoundEffect *repeat;
+  QMap <QString, Sound*> sounds;
+  QQueue<QString> events;
+  config* c;
 
 protected:
-    void run();
+  void run();
 };
 
 #endif // KEYDETECTTHREAD_H

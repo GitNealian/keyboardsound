@@ -1,26 +1,22 @@
 #include "keydetectthread.h"
-#include "keydetect.h"
+#include "desc.h"
+#include <QDebug>
 
-KeyDetectThread::KeyDetectThread()
+KeyDetectThread::KeyDetectThread(config* c)
 {
-  normalType = new QSoundEffect(NULL);
-  normalType->setSource(QUrl::fromLocalFile("/home/nealian/Workspace/keyboardsound/msounds/normal_type.wav"));
-  repeat =new QSoundEffect(NULL);
-  repeat->setSource(QUrl::fromLocalFile("/home/nealian/Workspace/keyboardsound/msounds/continue.wav"));
-  repeat->setLoopCount(QSoundEffect::Infinite);
+  this->c = c;
 }
 
 void KeyDetectThread::run()
 {
   input_event ie;
-
   int fd;
   fd_set fds;
-  fd = open((input_file_header + "3").c_str(), O_RDONLY);
+  fd = open(c->device.toStdString().c_str(), O_RDONLY);
 
   if (fd == -1) {
       return;
-  }
+    }
 
   while(true) {
       FD_ZERO(&fds);
@@ -33,32 +29,36 @@ void KeyDetectThread::run()
       ssize_t num = read(fd, (void *)&ie, sizeof(struct input_event));
 
       if (num == sizeof(struct input_event) && ie.type == EV_KEY) {
-          switch (ie.value) {
-            case KEY_PRESS:
-              {
-                this->normalType->play();
-                break;
-              }
-            case KEY_RELEASE:
-              {
-                if(repeat->isPlaying()){
-                    repeat->stop();
+          if (KEY_DESC.contains(ie.code))
+            {
+              QString desc = KEY_DESC[ie.code];
+              switch (ie.value)
+                {
+                case KEY_PRESS:
+                  {
+                    desc = desc + "D";
+                    break;
                   }
-                break;
-              }
-            case KEY_REPEAT:
-              {
-                if(!repeat->isPlaying()){
-                    repeat->play();
+                case KEY_RELEASE:
+                  {
+                    desc = desc + "U";
+                    break;
                   }
-                break;
-              }
-            default: break;
+                case KEY_REPEAT:
+                  {
+                    desc = desc + "R";
+                    break;
+                  }
+                default: break;
+                }
+              if (!desc.endsWith("R") || events.last()!=desc){
+                  events.enqueue(desc);
+                }
+              c->m->match(events);
             }
         }
     }
 
   if (fd>0) close(fd);
 }
-
 
